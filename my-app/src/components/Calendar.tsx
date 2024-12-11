@@ -1,15 +1,26 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 import { useCalendar } from '../contexts/CalendarContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { addMonths, subMonths, format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isWeekend } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
+
+type Event = {
+  id: string
+  name: string
+  startTime: string
+  endTime: string
+  description?: string
+  color: string
+}
 
 export const Calendar: React.FC = () => {
   const { currentDate, setCurrentDate, filteredEvents, selectedDate, setSelectedDate, moveEvent } = useCalendar()
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null)
 
   const days = eachDayOfInterval({
     start: startOfMonth(currentDate),
@@ -23,21 +34,54 @@ export const Calendar: React.FC = () => {
     setSelectedDate(day)
   }
 
-  const onDragEnd = (result: any) => {
-    if (!result.destination) return
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result
 
-    const sourceDate = result.source.droppableId
-    const destinationDate = result.destination.droppableId
-    const eventId = result.draggableId
+    if (!destination) return
+
+    const sourceDate = source.droppableId
+    const destinationDate = destination.droppableId
 
     if (sourceDate !== destinationDate) {
-      moveEvent(sourceDate, destinationDate, eventId)
+      moveEvent(sourceDate, destinationDate, draggableId)
     }
+
+    // Close the popover after dragging
+    setOpenPopoverId(null)
   }
 
-  useEffect(() => {
-    setSelectedDate(null)
-  }, [currentDate, setSelectedDate])
+  const renderEventList = (day: Date) => {
+    const dateString = format(day, 'yyyy-MM-dd')
+    const events = filteredEvents[dateString] || []
+
+    return (
+      <Droppable droppableId={dateString}>
+        {(provided) => (
+          <ul
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className="space-y-2"
+          >
+            {events.map((event: Event, index: number) => (
+              <Draggable key={event.id} draggableId={event.id} index={index}>
+                {(provided) => (
+                  <li
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className={`p-2 rounded text-sm bg-${event.color}-500 text-white`}
+                  >
+                    {event.name}
+                  </li>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </ul>
+        )}
+      </Droppable>
+    )
+  }
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -52,13 +96,18 @@ export const Calendar: React.FC = () => {
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
               <div key={day} className="text-center font-bold">{day}</div>
             ))}
-            {days.map(day => (
-              <Droppable key={day.toString()} droppableId={format(day, 'yyyy-MM-dd')}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
+            {days.map(day => {
+              const dateString = format(day, 'yyyy-MM-dd')
+              const events = filteredEvents[dateString] || []
+              return (
+                <Popover key={day.toString()} open={openPopoverId === dateString} onOpenChange={(open) => {
+                  if (open) {
+                    setOpenPopoverId(dateString)
+                  } else {
+                    setOpenPopoverId(null)
+                  }
+                }}>
+                  <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={`h-20 w-full ${
@@ -74,25 +123,31 @@ export const Calendar: React.FC = () => {
                     >
                       <div className="flex flex-col items-center">
                         <span>{format(day, 'd')}</span>
-                        {filteredEvents[format(day, 'yyyy-MM-dd')]?.map((event, index) => (
-                          <Draggable key={event.id} draggableId={event.id} index={index}>
-                            {(provided) => (
+                        {events.length > 0 && (
+                          <div className="flex mt-1 space-x-1">
+                            {events.slice(0, 3).map((event: Event) => (
                               <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`w-4 h-4 rounded-full mt-1 bg-${event.color}-500`}
+                                key={event.id}
+                                className={`w-2 h-2 rounded-full bg-${event.color}-500`}
                               />
+                            ))}
+                            {events.length > 3 && (
+                              <div className="w-2 h-2 rounded-full bg-gray-500" />
                             )}
-                          </Draggable>
-                        ))}
+                          </div>
+                        )}
                       </div>
                     </Button>
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            ))}
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-0">
+                    <div className="p-4">
+                      <h3 className="font-bold mb-2">{format(day, 'MMMM d, yyyy')}</h3>
+                      {renderEventList(day)}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )
+            })}
           </div>
         </CardContent>
       </Card>
