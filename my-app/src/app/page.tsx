@@ -5,18 +5,18 @@ import { Calendar } from '../components/Calendar'
 import { EventModal } from '../components/EventModal'
 import { EventList } from '../components/EventList'
 import { EventFilter } from '../components/EventFilter'
-import { useCalendar } from '../contexts/CalendarContext'
+import { useCalendar,Event } from '../contexts/CalendarContext'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 
 export default function Home() {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
   const [isEventListOpen, setIsEventListOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
   const { selectedDate, exportEvents } = useCalendar()
 
   const handleAddEvent = () => {
-    setSelectedEvent(null)
+    setSelectedEvent(undefined)
     setIsEventModalOpen(true)
   }
 
@@ -41,7 +41,7 @@ export default function Home() {
       <EventModal
         isOpen={isEventModalOpen}
         onClose={() => setIsEventModalOpen(false)}
-        event={selectedEvent}
+        event={selectedEvent|| undefined}
       />
       <EventList
         isOpen={isEventListOpen}
