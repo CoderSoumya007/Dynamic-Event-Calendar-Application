@@ -53,7 +53,7 @@ Check out the deployed app here: [Dynamic Event Calendar](https://dzwimj3umskmca
 - npm
 
 ### Installation
-1. Clone the repository:  git clone <repository-url>
+1. Clone the repository:  git clone https://github.com/CoderSoumya007/Dynamic-Event-Calendar-Application.git  
 
 Navigate to the project directory:cd my-app  
 Install dependencies:npm install  
