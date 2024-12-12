@@ -12,7 +12,7 @@ import { format } from 'date-fns'
 export default function Home() {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
   const [isEventListOpen, setIsEventListOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const { selectedDate, exportEvents } = useCalendar()
 
   const handleAddEvent = () => {
@@ -20,7 +20,7 @@ export default function Home() {
     setIsEventModalOpen(true)
   }
 
-  const handleEditEvent = (event: any) => {
+  const handleEditEvent = (event: Event) => {
     setSelectedEvent(event)
     setIsEventModalOpen(true)
     setIsEventListOpen(false)
