@@ -5,7 +5,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react'
 
 type EventColor = 'blue' | 'green' | 'red' | 'yellow' | 'purple'
 
-type Event = {
+export type Event = {
   id: string
   name: string
   startTime: string

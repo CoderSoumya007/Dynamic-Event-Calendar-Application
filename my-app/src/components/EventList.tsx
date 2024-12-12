@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useCalendar } from '../contexts/CalendarContext'
+import { useCalendar,Event } from '../contexts/CalendarContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 type EventListProps = {
   isOpen: boolean
   onClose: () => void
-  onEditEvent: (event: any) => void
+  onEditEvent: (event: Event) => void
 }
 
 export const EventList: React.FC<EventListProps> = ({ isOpen, onClose, onEditEvent }) => {
